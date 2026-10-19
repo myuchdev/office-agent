@@ -1,0 +1,18 @@
+# ===== Agent 编排 =====
+langgraph>=0.2.40
+
+# ===== 大模型接入（OpenAI 兼容，默认 DeepSeek）=====
+langchain-core>=0.3
+langchain-openai>=0.2
+openai>=1.40
+
+# ===== 界面 =====
+streamlit>=1.38
+
+# ===== 工具 =====
+python-dotenv>=1.0.0
+pydantic>=2.0
+
+# 说明：RAG 默认使用内置「本地 hashing embedding + 余弦检索」，
+# 无需联网下载模型、无需额外 API Key，开箱即跑。
+# 如需切换到 Chroma 向量库 / 云端语义 embedding，见 README「进阶」一节。

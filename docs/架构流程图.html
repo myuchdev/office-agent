@@ -1,0 +1,105 @@
+<html style="margin:0;padding:0;">
+<title>企业办公智能助手 Agent 架构与 ReAct 流程</title>
+<div style="width:100%;box-sizing:border-box;background:#f5f7fa;padding:20px;font-family:'Segoe UI','Microsoft YaHei',sans-serif;color:#1a202c;">
+  <div style="max-width:960px;margin:0 auto;">
+    <h2 style="margin:0 0 4px;font-size:20px;text-align:center;">企业办公智能助手 · 系统架构与 ReAct 流程</h2>
+    <p style="margin:0 0 14px;font-size:13px;text-align:center;color:#5b6775;">一个场景覆盖：Function Calling 工具调用 · RAG 检索增强 · ReAct 推理循环 · Memory 多轮记忆</p>
+
+    <!-- Layer 1 用户 -->
+    <div style="border:1.5px solid #3b6ea5;background:#e8eef5;border-radius:10px;padding:10px 14px;text-align:center;font-size:15px;font-weight:600;">员工 · 自然语言提问</div>
+    <div class="v" style="--c:#5b728a"></div><div class="al">输入问题</div>
+
+    <!-- Layer 2 Streamlit -->
+    <div style="border:1.5px solid #3b6ea5;background:#e8eef5;border-radius:10px;padding:10px 14px;text-align:center;">
+      <div style="font-weight:600;font-size:14px;">Streamlit 对话界面</div>
+      <div style="font-size:12.5px;color:#46556a;margin-top:3px;">多轮对话 · 实时展示「思考 / 工具调用 / 工具返回」</div>
+    </div>
+    <div class="v" style="--c:#5b728a"></div>
+
+    <!-- Layer 3 LangGraph ReAct -->
+    <div style="border:2px solid #1f3a5f;background:#ffffff;border-radius:12px;padding:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+        <span style="font-weight:700;font-size:14px;color:#1f3a5f;">LangGraph ReAct 智能体</span>
+        <span style="font-size:12px;background:#fdf3e0;color:#9a6412;border:1px solid #e2b458;border-radius:20px;padding:2px 10px;">MemorySaver 按 thread_id 保存多轮记忆</span>
+      </div>
+
+      <!-- 两节点 + 路由 -->
+      <div style="display:flex;align-items:stretch;justify-content:center;flex-wrap:wrap;gap:0;margin-top:12px;">
+        <div style="flex:1 1 200px;max-width:280px;border:1.5px solid #3b6ea5;background:#e8eef5;border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-weight:600;font-size:13.5px;">agent 节点</div>
+          <div style="font-size:12px;color:#46556a;margin-top:3px;">LLM 决策：是否调用工具、调用哪个</div>
+        </div>
+        <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 10px;min-width:120px;">
+          <div class="h" style="--c:#3b6ea5"></div>
+          <div style="font-size:11.5px;color:#46556a;margin-top:4px;text-align:center;">有 tool_calls</div>
+        </div>
+        <div style="flex:1 1 200px;max-width:280px;border:1.5px solid #0f7b6c;background:#e4f3ef;border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-weight:600;font-size:13.5px;color:#0b5d52;">tools 节点（ToolNode）</div>
+          <div style="font-size:12px;color:#33524b;margin-top:3px;">程序真正执行工具，回传结果</div>
+        </div>
+      </div>
+
+      <!-- 分支与回环 -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+        <div style="flex:1 1 220px;border:1px dashed #8a98a8;background:#f7f9fb;border-radius:8px;padding:8px 10px;font-size:12.5px;">
+          <span style="font-weight:600;">无 tool_calls</span> → 直接生成回答并结束（END）
+        </div>
+        <div style="flex:1 1 280px;border:1px solid #e2b458;background:#fdf6e7;border-radius:8px;padding:8px 10px;font-size:12.5px;color:#8a5a10;">
+          ↩ 工具结果回传后回到 agent 继续推理，可多轮，直至能回答（ReAct 循环）
+        </div>
+      </div>
+    </div>
+
+    <div class="v" style="--c:#0f7b6c"></div><div class="al" style="color:#0b5d52;">Function Calling：模型输出工具名 + 参数</div>
+
+    <!-- Layer 4 工具 -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div style="flex:1 1 220px;border:1.5px solid #0f7b6c;background:#e4f3ef;border-radius:10px;padding:10px;">
+        <div style="font-weight:600;font-size:13.5px;color:#0b5d52;">search_knowledge</div>
+        <div style="font-size:12px;color:#33524b;margin-top:3px;">RAG 检索报销 / 请假 / IT 制度</div>
+      </div>
+      <div style="flex:1 1 220px;border:1.5px solid #0f7b6c;background:#e4f3ef;border-radius:10px;padding:10px;">
+        <div style="font-weight:600;font-size:13.5px;color:#0b5d52;">get_ticket_status</div>
+        <div style="font-size:12px;color:#33524b;margin-top:3px;">按工单号查处理进度</div>
+      </div>
+      <div style="flex:1 1 220px;border:1.5px solid #0f7b6c;background:#e4f3ef;border-radius:10px;padding:10px;">
+        <div style="font-weight:600;font-size:13.5px;color:#0b5d52;">calc_annual_leave</div>
+        <div style="font-size:12px;color:#33524b;margin-top:3px;">按工作年限计算年假天数</div>
+      </div>
+    </div>
+
+    <div class="v" style="--c:#0f7b6c"></div><div class="al" style="color:#0b5d52;">RAG 检索链路（search_knowledge 内部）</div>
+
+    <!-- Layer 5 RAG pipeline -->
+    <div style="display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;">
+      <div class="step">文档切分<br><span>按标题 + 滑动窗口 overlap</span></div>
+      <div class="arr">→</div>
+      <div class="step">Embedding<br><span>本地特征哈希向量化（可换云端语义模型）</span></div>
+      <div class="arr">→</div>
+      <div class="step">混合检索<br><span>向量余弦 + 关键词 IDF，Top-K 召回</span></div>
+      <div class="arr">→</div>
+      <div class="step">LLM 生成<br><span>基于上下文回答 + 标注来源</span></div>
+    </div>
+
+    <!-- 图例 -->
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;font-size:12px;color:#46556a;justify-content:center;">
+      <span><i style="display:inline-block;width:12px;height:12px;background:#e8eef5;border:1.5px solid #3b6ea5;border-radius:3px;vertical-align:-1px;"></i> 编排 / 模型 / 界面</span>
+      <span><i style="display:inline-block;width:12px;height:12px;background:#e4f3ef;border:1.5px solid #0f7b6c;border-radius:3px;vertical-align:-1px;"></i> 工具 / RAG</span>
+      <span><i style="display:inline-block;width:12px;height:12px;background:#fdf3e0;border:1.5px solid #e2b458;border-radius:3px;vertical-align:-1px;"></i> 记忆 / 回环</span>
+    </div>
+    <p style="text-align:center;font-size:11.5px;color:#8a94a2;margin-top:8px;">示意图：用于说明组件关系与数据流向，非官方架构标准。</p>
+  </div>
+
+  <style>
+    .v{display:flex;justify-content:center;margin:7px 0 0;}
+    .v:before{content:"";width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:9px solid var(--c);}
+    .h{width:100%;height:2px;background:var(--c);position:relative;}
+    .h:after{content:"";position:absolute;right:-1px;top:-4px;width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid var(--c);}
+    .al{text-align:center;font-size:11.5px;color:#5b6775;margin:2px 0 7px;}
+    .step{flex:1 1 140px;background:#ffffff;border:1.5px solid #0f7b6c;border-radius:9px;padding:9px;text-align:center;font-size:13px;font-weight:600;color:#0b5d52;}
+    .step span{font-weight:400;font-size:11.5px;color:#5b6775;}
+    .arr{display:flex;align-items:center;color:#0f7b6c;font-weight:700;font-size:15px;}
+    @media (max-width:560px){ .arr{transform:rotate(90deg);} }
+  </style>
+</div>
+</html>
