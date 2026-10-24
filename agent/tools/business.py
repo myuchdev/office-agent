@@ -33,7 +33,7 @@ def get_ticket_status(ticket_id: str) -> str:
 @tool
 def calc_annual_leave(years_of_service: int) -> str:
     """根据员工的累计工作年限（整数，单位：年）计算法定带薪年休假天数。
-    规则：累计工作满 1 年不满 10 年为 5 天；满 10 年不满 20 年为 10 天；满 20 年为 15 天；不满 1 年为 0 天。"""
+    规则：累计工作满 1 年不满 10 年为 5 天；满 10 年不满 20 年为 10 天；满 20 年为法定 15 天加公司福利 5 天，合计 20 天；不满 1 年为 0 天。"""
     y = int(years_of_service)
     if y < 1:
         days, rule = 0, "累计工作不满 1 年，依法不享受带薪年休假。"
