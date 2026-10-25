@@ -5,7 +5,7 @@
 - **问制度**：报销标准、年假病假、发票与审批流程、VPN/密码/打印机等 IT 问题 → 走 **RAG 知识库**检索并标注来源回答；
 - **办事务**：查询 IT 工单进度、计算年休假天数 → Agent 自动**调用工具**执行。
 
-项目用一个场景完整覆盖 Agent 核心能力：**ReAct 推理-行动循环、工具调用（Function Calling）、RAG 检索增强、多轮记忆（Memory）**。
+项目用一个场景实践了 ReAct 工作流、工具调用、RAG 检索与多轮状态管理。
 
 ---
 
@@ -17,7 +17,7 @@
 | 大模型 | DeepSeek（`deepseek-chat`，OpenAI 兼容，便宜稳定；可换通义/Kimi/智谱/Ollama） |
 | RAG 检索 | 文档切分 + 本地特征哈希 Embedding + **混合检索（向量余弦 + 关键词 IDF）** Top-K（零下载、零额外 Key） |
 | 记忆 | LangGraph MemorySaver + thread_id（同一会话多轮上下文） |
-| 界面 | Streamlit（实时展示思考与工具调用过程） |
+| 界面 | Streamlit（展示工具调用过程及执行结果） |
 | 数据 | 本地 JSON（向量索引、模拟工单） |
 
 ---
@@ -53,7 +53,7 @@ python -m venv .venv
 
 ### 2. 申请 DeepSeek API Key 并配置
 
-- 打开 https://platform.deepseek.com/ 注册，在「API Keys」创建一个 Key；充值 5～10 元即可大量测试。
+- 打开 https://platform.deepseek.com/ 注册，在「API Keys」创建一个 Key；按需开通并参考服务商当前计费。
 - 复制环境变量模板并编辑：
 
 ```powershell
