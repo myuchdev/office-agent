@@ -5,6 +5,8 @@
 - 条件边：有 tool_calls 则进入 tools，否则结束；tools 执行后回到 agent（ReAct 循环）；
 - MemorySaver + thread_id：实现同一会话的多轮记忆。
 """
+import logging
+
 from langchain_core.messages import SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
@@ -25,6 +27,17 @@ SYSTEM_PROMPT = """你是「星澜科技」的企业办公智能助手，名叫"
 - 涉及金额、天数、流程等事实性信息，一律以工具返回为准，不要凭记忆杜撰；
 - 若问题超出能力范围或缺少依据，明确告知并建议联系人力资源部（HR）或 IT 服务台；
 - 回答简洁、条理清晰，必要时分点说明，使用中文。"""
+
+logger = logging.getLogger(__name__)
+
+
+def handle_tool_error(exc: Exception) -> str:
+    """工具执行异常时：服务端记录完整堆栈，返回给 Agent 的只有通用提示。"""
+    logger.error(
+        "Agent 工具执行失败",
+        exc_info=(type(exc), exc, exc.__traceback__),
+    )
+    return "工具执行失败，请稍后重试。"
 
 
 def build_agent():
@@ -52,7 +65,10 @@ def build_agent():
 
     builder = StateGraph(MessagesState)
     builder.add_node("agent", agent_node)
-    builder.add_node("tools", ToolNode(tools))
+    builder.add_node(
+        "tools",
+        ToolNode(tools, handle_tool_errors=handle_tool_error),
+    )
     builder.add_edge(START, "agent")
     builder.add_conditional_edges("agent", tools_condition)
     builder.add_edge("tools", "agent")

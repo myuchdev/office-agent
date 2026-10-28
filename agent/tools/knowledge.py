@@ -1,10 +1,13 @@
 """RAG 知识库检索工具。"""
+import logging
 from functools import lru_cache
 
 from langchain_core.tools import tool
 
 from agent.config import settings
 from knowledge.vector_store import VectorStore
+
+logger = logging.getLogger(__name__)
 
 
 @lru_cache(maxsize=1)
@@ -26,7 +29,8 @@ def search_knowledge(query: str) -> str:
     输入：用户的完整问题或其中的关键词。"""
     store = get_store()
     if len(store) == 0:
-        return "知识库为空。请先在项目根目录运行：python -m knowledge.build_index"
+        logger.warning("知识库索引为空，无法执行制度检索。")
+        return "当前暂时无法查询到相关制度资料，请稍后重试或联系管理员。"
 
     hits = store.search(query, k=settings.retrieval_top_k)
     if not hits:

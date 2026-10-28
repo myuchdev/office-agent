@@ -3,6 +3,7 @@
 运行（项目根目录）：
     streamlit run app.py
 """
+import logging
 import uuid
 
 import streamlit as st
@@ -10,6 +11,8 @@ from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
 from agent.config import settings
 from agent.graph import build_agent
+
+logger = logging.getLogger(__name__)
 
 st.set_page_config(page_title="企业办公智能助手", layout="centered")
 
@@ -69,16 +72,20 @@ if prompt := st.chat_input("请输入你的问题…"):
                 last = event["messages"][-1]
                 if isinstance(last, AIMessage) and getattr(last, "tool_calls", None):
                     for tc in last.tool_calls:
-                        status.write(f"调用工具 `{tc['name']}`，参数：{tc['args']}")
+                        status.write(f"正在调用工具：`{tc['name']}`")
                 if isinstance(last, ToolMessage):
-                    status.write(f"工具返回：{str(last.content)[:120]}…")
+                    status.write("工具执行完成，正在整理回答…")
                 if isinstance(last, AIMessage) and last.content:
                     final_text = last.content
                     answer_box.markdown(final_text)
             status.update(label="回答完成", state="complete", expanded=False)
-        except Exception as exc:  # noqa: BLE001
-            final_text = f"运行出错：{exc}"
-            status.update(label="出错了", state="error")
+        except Exception:
+            logger.exception("Agent 执行失败")
+            final_text = (
+                "抱歉，当前请求暂时无法处理，请稍后重试。"
+                "如果问题持续出现，请联系管理员。"
+            )
+            status.update(label="处理失败", state="error")
             answer_box.error(final_text)
 
     st.session_state.messages.append({"role": "assistant", "content": final_text})
